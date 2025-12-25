@@ -19,8 +19,9 @@
 
 - PHP 8.1以上（推奨: 8.3+）
 - Composer 2.x
-- MySQL 8.0以上（オプション）
+- SQLite 3.x（PHP組み込み）
 - Git
+- MySQL 8.0以上（オプション・Phase 3以降）
 
 ### インストール
 
@@ -116,6 +117,13 @@ php -S localhost:8000 -t public/
 # http://localhost:8000
 ```
 
+### データベーステスト
+
+```bash
+# データベース接続テストを実行
+php public/db_test.php
+```
+
 ## 📖 学習の進め方
 
 1. **[環境構築ガイド](docs/setup.md)** に従って開発環境をセットアップ
@@ -142,13 +150,16 @@ php -S localhost:8000 -t public/
 
 ## 📈 進捗状況
 
-現在のステータス: **Phase 0 - 環境構築中（80%完了）**
+現在のステータス: **Phase 0 - 環境構築完了！（100%） 🎉**
 
 - ✅ PHP 8.4.5のインストール確認
 - ✅ Composer 2.9.2のインストール
+- ✅ SQLiteデータベースのセットアップ
 - ✅ プロジェクト構造の作成
 - ✅ Hello Worldプログラムの実行
-- ⏳ MySQLのインストール（進行中）
+- ✅ データベース接続テストの実行
+
+**次のステップ**: Phase 1（基礎編）の学習開始
 
 詳細は [docs/progress.md](docs/progress.md) を参照してください。
 

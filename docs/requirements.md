@@ -112,8 +112,13 @@ PHP の基礎から実践的なスキルまで体系的に習得できる学習�
 
 - PHP 8.1 以上
 - Composer 2.x
-- MySQL 8.0 / PostgreSQL 13 以上
+- SQLite 3.x（PHP組み込み）
 - Git
+
+### 4.1.1 オプション環境
+
+- MySQL 8.0以上（Phase 3以降で使用）
+- PostgreSQL 13以上（代替オプション）
 
 ### 4.2 推奨開発環境
 

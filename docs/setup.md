@@ -136,7 +136,39 @@ composer config -g repos.packagist composer https://packagist.jp
 
 ---
 
-## MySQL のインストール
+## データベースのセットアップ
+
+### SQLite の確認（推奨・即座に使用可能）
+
+SQLiteはPHPに組み込まれているため、インストール不要です。
+
+```bash
+# SQLite拡張機能の確認
+php -m | grep -i sqlite
+
+# 出力例:
+# pdo_sqlite
+# sqlite3
+```
+
+**利点**:
+- セットアップ不要
+- ファイルベースで管理が容易
+- 学習に最適
+- 後でMySQLに移行可能
+
+**データベースファイルの場所**:
+```
+php_practice/database/test.db
+```
+
+### MySQL のインストール（オプション・Phase 3以降）
+
+**注意**: 初学者はまずSQLiteで学習を進め、Phase 3でMySQLに移行することを推奨します。
+
+---
+
+## MySQL のインストール（オプション）
 
 ### macOS
 
