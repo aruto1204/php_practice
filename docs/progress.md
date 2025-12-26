@@ -14,7 +14,7 @@
 | フェーズ | ステータス | 開始日 | 完了日 | 進捗率 |
 |---------|----------|--------|--------|--------|
 | Phase 0: 環境構築 | 完了 | 2025-12-25 | 2025-12-25 | 100% |
-| Phase 1: 基礎編 | 進行中 | 2025-12-25 | - | 40% |
+| Phase 1: 基礎編 | 進行中 | 2025-12-25 | - | 60% |
 | Phase 2: 中級編 | 未開始 | - | - | 0% |
 | Phase 3: 応用編 | 未開始 | - | - | 0% |
 | Phase 4: 実践プロジェクト | 未開始 | - | - | 0% |
@@ -81,21 +81,21 @@
 
 ---
 
-### 1.3 制御構造 ⏸️
+### 1.3 制御構造 ✅
 
 **学習項目**:
-- [ ] if/else 文
-- [ ] switch 文
-- [ ] match 式（PHP 8）
-- [ ] for/foreach/while ループ
-- [ ] break/continue
+- [x] if/else 文
+- [x] switch 文
+- [x] match 式（PHP 8）
+- [x] for/foreach/while ループ
+- [x] break/continue
 
 **演習課題**:
-- [ ] FizzBuzz プログラム
-- [ ] 九九表の出力
-- [ ] 配列の反復処理
+- [x] FizzBuzz プログラム
+- [x] 九九表の出力
+- [x] 配列の反復処理
 
-**完了日**: -
+**完了日**: 2025-12-26
 
 ---
 
@@ -484,13 +484,17 @@
   - 04_operators_basic.php: 算術・比較・論理演算子の学習
   - 05_assignment_and_null_coalescing.php: 代入演算子とnull合体演算子の学習
   - exercises/02_operator_practice.php: 計算機や判定システムの実装
+- Phase 1.3: 制御構造の完了 ✅
+  - 06_conditional_statements.php: if/else、switch、match式の学習
+  - 07_loops.php: for/foreach/while、break/continueの学習
+  - exercises/03_control_flow_practice.php: FizzBuzz、九九表、素数判定など
 
 **次週の目標**:
-- Phase 1.3（制御構造）の学習
 - Phase 1.4（関数）の学習
 - Phase 1.5（配列）の学習
+- Phase 2（中級編）の準備
 
-**学習時間**: 9時間
+**学習時間**: 11時間
 
 **メモ・気づき**:
 - 包括的なドキュメントを整備できた
@@ -510,6 +514,9 @@
 - Phase 1.2で演算子の種類と使い分けを習得
 - === と == の違い、短絡評価、null合体演算子の便利さを理解
 - match式を使った簡潔な条件分岐の書き方を学んだ
+- Phase 1.3で制御構造の基礎を習得
+- 早期リターンパターン、match式の安全性、ループ制御を理解
+- FizzBuzzや素数判定などの古典的なプログラミング問題を実装
 
 ---
 
