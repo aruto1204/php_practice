@@ -1,0 +1,656 @@
+openapi: 3.0.3
+info:
+  title: REST API - EC Site API
+  description: |
+    Phase 4.6で実装した、ECサイト向けREST APIのドキュメントです。
+
+    ## 機能
+    - ユーザー管理（登録、ログイン、プロフィール）
+    - 商品管理（CRUD、検索、カテゴリー）
+    - 注文管理（作成、ステータス更新、履歴）
+    - JWT認証
+    - レート制限
+
+    ## 認証
+    ほとんどのエンドポイントはJWT Bearer認証が必要です。
+    `Authorization: Bearer <token>` ヘッダーにアクセストークンを含めてください。
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+tags:
+  - name: Auth
+    description: 認証関連のエンドポイント
+  - name: Products
+    description: 商品管理
+  - name: Orders
+    description: 注文管理
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: john@example.com
+        full_name:
+          type: string
+          example: John Doe
+        is_admin:
+          type: boolean
+          example: false
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: ノートパソコン
+        description:
+          type: string
+          example: 高性能なノートパソコン
+        price:
+          type: number
+          format: float
+          example: 89900.00
+        stock:
+          type: integer
+          example: 10
+        category:
+          type: string
+          example: 電子機器
+        image_url:
+          type: string
+          nullable: true
+          example: https://example.com/images/laptop.jpg
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          enum: [pending, processing, completed, cancelled]
+          example: pending
+        status_label:
+          type: string
+          example: 保留中
+        total_amount:
+          type: number
+          format: float
+          example: 179800.00
+        shipping_address:
+          type: string
+          example: 東京都渋谷区1-2-3
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        items_count:
+          type: integer
+          example: 2
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        order_id:
+          type: integer
+          example: 1
+        product_id:
+          type: integer
+          example: 1
+        quantity:
+          type: integer
+          example: 2
+        price:
+          type: number
+          format: float
+          example: 89900.00
+        subtotal:
+          type: number
+          format: float
+          example: 179800.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              example: Validation failed
+            details:
+              type: object
+              additionalProperties: true
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          additionalProperties: true
+        message:
+          type: string
+          example: Success
+        meta:
+          $ref: '#/components/schemas/Meta'
+
+    Meta:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        api_version:
+          type: string
+          example: v1
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: ユーザー登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - email
+                - password
+                - full_name
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 20
+                  example: johndoe
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: Password123
+                full_name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: ユーザー登録成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+                          access_token:
+                            type: string
+                          refresh_token:
+                            type: string
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: ログイン
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  example: johndoe
+                password:
+                  type: string
+                  example: Password123
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+                          access_token:
+                            type: string
+                          refresh_token:
+                            type: string
+        '401':
+          description: 認証失敗
+
+  /auth/refresh:
+    post:
+      tags:
+        - Auth
+      summary: トークンリフレッシュ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+      responses:
+        '200':
+          description: リフレッシュ成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          access_token:
+                            type: string
+
+  /auth/me:
+    get:
+      tags:
+        - Auth
+      summary: 現在のユーザー情報取得
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/User'
+
+  /products:
+    get:
+      tags:
+        - Products
+      summary: 商品一覧取得
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+
+    post:
+      tags:
+        - Products
+      summary: 商品作成（管理者のみ）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - price
+                - category
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                  format: float
+                stock:
+                  type: integer
+                  default: 0
+                category:
+                  type: string
+                image_url:
+                  type: string
+                  nullable: true
+      responses:
+        '201':
+          description: 作成成功
+        '403':
+          description: 権限なし
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: 商品詳細取得
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '404':
+          description: 商品が見つかりません
+
+    put:
+      tags:
+        - Products
+      summary: 商品更新（管理者のみ）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                category:
+                  type: string
+                image_url:
+                  type: string
+      responses:
+        '200':
+          description: 更新成功
+        '403':
+          description: 権限なし
+        '404':
+          description: 商品が見つかりません
+
+    delete:
+      tags:
+        - Products
+      summary: 商品削除（管理者のみ）
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '403':
+          description: 権限なし
+        '404':
+          description: 商品が見つかりません
+
+  /orders:
+    get:
+      tags:
+        - Orders
+      summary: 注文一覧取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Order'
+
+    post:
+      tags:
+        - Orders
+      summary: 注文作成
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipping_address
+                - items
+              properties:
+                shipping_address:
+                  type: string
+                  example: 東京都渋谷区1-2-3
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id:
+                        type: integer
+                      quantity:
+                        type: integer
+      responses:
+        '201':
+          description: 注文作成成功
+        '400':
+          description: バリデーションエラーまたは在庫不足
+
+  /orders/{id}:
+    get:
+      tags:
+        - Orders
+      summary: 注文詳細取得
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Order'
+        '403':
+          description: 権限なし
+        '404':
+          description: 注文が見つかりません
+
+    put:
+      tags:
+        - Orders
+      summary: 注文ステータス更新
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [pending, processing, completed, cancelled]
+      responses:
+        '200':
+          description: 更新成功
+        '403':
+          description: 権限なし
+        '404':
+          description: 注文が見つかりません
